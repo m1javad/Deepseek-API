@@ -1,11 +1,53 @@
+# --- Python ---
 venv/
+.venv/
+env/
 __pycache__/
-*.pyc
-.env
+*.py[cod]
+*$py.class
+*.so
+build/
+dist/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
 
-# Session artifacts — contain session tokens + cookies. NEVER commit.
-session.json
-session
-*.env.*
+# --- Secrets & credentials ---
+.env
+.env.*
 !.env.example
+*.pem
+*.key
+credentials*.json
+secrets*.json
+*.bak
+*.orig
+
+# --- Session artifacts (LIVE TOKENS + COOKIES — NEVER COMMIT) ---
+session.json
+session/
+*.session
+cookies*.json
+
+# --- Runtime / uploads ---
+temp_uploads/
+uploads/
+*.log
+
+# --- Local scratch files that may contain tokens ---
+job.txt.bak
+
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+*.swp
+
+# --- Agent/tool scratch ---
 CLAUDE.md
+*.pre-redact

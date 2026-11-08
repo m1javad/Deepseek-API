@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "ارزیاب بیمه تکمیلی — Ostaadx",
+  "version": "1.0.0",
+  "description": "شناسایی خودکار مدارک دارویی در iapui.ostaadx.ai، استخراج متن با OCR ایبو و ارزیابی با DeepSeek.",
+  "minimum_chrome_version": "110",
+  "permissions": ["storage", "downloads"],
+  "host_permissions": [
+    "https://www.eboo.ir/*",
+    "http://127.0.0.1/*",
+    "http://localhost/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "ارزیاب بیمه تکمیلی"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://iapui.ostaadx.ai/*"],
+      "js": ["marked.min.js", "content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>ارزیاب بیمه تکمیلی - DeepSeek</title>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<style>
+  * { box-sizing: border-box; font-family: Tahoma, sans-serif; }
+  body { max-width: 1000px; margin: 20px auto; padding: 0 16px; background: #f1f5f9; color: #1e293b; }
+  h2 { margin-bottom: 10px; font-size: 20px; }
+  .panel { background: white; border-radius: 8px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+  .row { margin-bottom: 12px; }
+  label { display: block; margin-bottom: 4px; font-weight: bold; font-size: 13px; }
+  input, select, textarea { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-family: inherit; font-size: 14px; }
+  button { padding: 10px 16px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+  .btn-blue { background: #2563eb; color: white; width: 100%; }
+  .btn-green { background: #10b981; color: white; width: 100%; }
+  .btn-blue:disabled, .btn-green:disabled { background: #94a3b8; cursor: not-allowed; }
+  .hidden { display: none; }
+
+  .file-card { border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px; margin-bottom: 10px; background: #f8fafc; }
+  .file-header { display: flex; justify-content: space-between; font-size: 12px; font-weight: bold; margin-bottom: 8px; }
+  .status-badge { padding: 2px 6px; border-radius: 4px; font-size: 11px; }
+  .status-pending { background: #e2e8f0; }
+  .status-success { background: #dcfce7; color: #166534; }
+  .status-error { background: #fee2e2; color: #991b1b; }
+  .file-card textarea { font-size: 12px; margin-top: 5px; resize: vertical; }
+
+  .chat-box { max-height: 650px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 6px; padding: 16px; background: #f8fafc; margin-bottom: 10px; display: flex; flex-direction: column; gap: 12px; }
+  .msg { padding: 12px; border-radius: 6px; line-height: 1.9; font-size: 14px; }
+  .msg-user { background: #dbeafe; align-self: flex-start; max-width: 85%; border-bottom-right-radius: 0; white-space: pre-wrap; }
+  .msg-ai { background: white; border: 1px solid #bbf7d0; align-self: stretch; }
+  .msg-ai h1, .msg-ai h2, .msg-ai h3 { margin-top: 14px; margin-bottom: 6px; font-size: 15px; color: #065f46; }
+  .msg-ai h1 { font-size: 17px; }
+  .msg-ai p { margin: 6px 0; }
+  .msg-ai ul, .msg-ai ol { padding-right: 22px; margin: 6px 0; }
+  .msg-ai li { margin: 4px 0; }
+  .msg-ai code { background: #f1f5f9; padding: 2px 6px; border-radius: 3px; font-size: 13px; direction: ltr; }
+  .msg-ai pre { background: #1e293b; color: #e2e8f0; padding: 10px; border-radius: 4px; overflow-x: auto; direction: ltr; text-align: left; }
+  .msg-ai strong { color: #065f46; }
+  .msg-ai table { border-collapse: collapse; width: 100%; margin: 8px 0; }
+  .msg-ai th, .msg-ai td { border: 1px solid #e2e8f0; padding: 6px 10px; text-align: right; }
+  .msg-ai th { background: #f0fdf4; }
+  .msg-ai blockquote { border-right: 3px solid #10b981; padding-right: 10px; color: #64748b; margin: 8px 0; }
+  .typing { color: #64748b; font-style: italic; }
+  .hint { font-size: 11px; color: #94a3b8; margin-top: 4px; }
+</style>
+</head>
+<body>
+
+<h2>🏥 ارزیاب بیمه تکمیلی</h2>
+
+<div class="panel">
+  <div class="row">
+    <label>توکن API ایبو (ebo.ir)</label>
+    <input id="ebooToken" type="text" placeholder="توکن خود را وارد کنید..." />
+  </div>
+  <div class="row">
+    <label>فایل‌های مدارک (عکس یا PDF)</label>
+    <input id="invoiceFiles" type="file" multiple />
+    <div class="hint">شیوه‌نامه از فایل sh.md در پوشه پروژه خوانده می‌شود.</div>
+  </div>
+  <button id="btnOcr" class="btn-blue" onclick="startOCR()">🚀 استخراج متن مدارک (OCR)</button>
+</div>
+
+<div id="ocrResults" class="panel hidden">
+  <h3 style="font-size:16px; margin-top:0;">📝 نتایج استخراج متن</h3>
+  <div id="ocrContainer"></div>
+</div>
+
+<div id="aiSection" class="panel hidden">
+  <h3 style="font-size:16px; margin-top:0;">🧠 ارزیابی با DeepSeek</h3>
+  <div class="row">
+    <label>توضیح اضافی برای هوش مصنوعی (اختیاری)</label>
+    <textarea id="extraNote" rows="2" placeholder="مثلاً: این نسخه برای همسر بیمه‌شده هم هست / سقف پرداخت سال ۱۴۰۴ مدنظر باشد / ..."></textarea>
+  </div>
+  <button id="btnAnalyze" class="btn-green" onclick="sendToAI()">✨ شروع ارزیابی</button>
+</div>
+
+<div id="chatSection" class="panel hidden">
+  <h3 style="font-size:16px; margin-top:0;">💬 گفتگو و پیگیری</h3>
+  <div id="chatBox" class="chat-box"></div>
+  <div style="display:flex; gap:8px;">
+    <input id="chatInput" type="text" placeholder="سوال یا پیگیری..." onkeypress="if(event.key==='Enter') sendFollowUp()" />
+    <button class="btn-blue" style="width:auto; white-space:nowrap;" onclick="sendFollowUp()">ارسال</button>
+  </div>
+</div>
+
+<script>
+const API_URL = 'https://www.eboo.ir/api/ocr/getway';
+const BACKEND = 'http://127.0.0.1:8000';
+let allOcrText = "";
+let currentConversationId = null;
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function renderMarkdown(text) {
+  if (window.marked) {
+    try { return marked.parse(text); } catch (e) {}
+  }
+  return escapeHtml(text).replace(/\n/g, '<br>');
+}
+
+// ---------- OCR ----------
+function sendXHR(formData) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', API_URL, true);
+    xhr.onload = () => resolve({ text: xhr.responseText, contentType: xhr.getResponseHeader('content-type') || '' });
+    xhr.onerror = () => reject(new Error('خطای شبکه یا CORS'));
+    xhr.send(formData);
+  });
+}
+
+async function processInvoice(file, token, index) {
+  const statusEl = document.getElementById(`status-${index}`);
+  const textEl = document.getElementById(`text-${index}`);
+  statusEl.textContent = '⏳ آپلود...';
+  statusEl.className = 'status-badge status-pending';
+  try {
+    const fdU = new FormData();
+    fdU.append('token', token);
+    fdU.append('command', 'addfile');
+    fdU.append('filehandle', file, file.name);
+    const up = await sendXHR(fdU);
+    const upJson = JSON.parse(up.text);
+    if (upJson.Status !== 'Done') throw new Error(upJson.Status);
+
+    statusEl.textContent = '⏳ OCR...';
+    const fdC = new FormData();
+    fdC.append('token', token);
+    fdC.append('command', 'convert');
+    fdC.append('filetoken', upJson.FileToken);
+    fdC.append('method', '4');
+    fdC.append('output', 'txtraw');
+    const cv = await sendXHR(fdC);
+    let plain = cv.text;
+    if (cv.contentType.includes('text/html')) {
+      const doc = new DOMParser().parseFromString(plain, 'text/html');
+      plain = doc.body.textContent || plain;
+    }
+    textEl.value = plain.trim();
+    statusEl.textContent = '✅ موفق';
+    statusEl.className = 'status-badge status-success';
+    return plain.trim();
+  } catch (err) {
+    statusEl.textContent = '❌ خطا';
+    statusEl.className = 'status-badge status-error';
+    textEl.value = err.message;
+    return null;
+  }
+}
+
+async function startOCR() {
+  const token = document.getElementById('ebooToken').value.trim();
+  const files = document.getElementById('invoiceFiles').files;
+  if (!token) return alert('توکن ایبو را وارد کنید');
+  if (files.length === 0) return alert('حداقل یک فایل انتخاب کنید');
+
+  document.getElementById('btnOcr').disabled = true;
+  document.getElementById('ocrResults').classList.remove('hidden');
+  document.getElementById('aiSection').classList.add('hidden');
+  document.getElementById('chatSection').classList.add('hidden');
+
+  const container = document.getElementById('ocrContainer');
+  container.innerHTML = '';
+  allOcrText = "";
+  currentConversationId = null;
+
+  Array.from(files).forEach((f, i) => {
+    const card = document.createElement('div');
+    card.className = 'file-card';
+    card.innerHTML = `
+      <div class="file-header">
+        <span>${escapeHtml(f.name)}</span>
+        <span class="status-badge status-pending" id="status-${i}">در انتظار</span>
+      </div>
+      <textarea id="text-${i}" rows="3" readonly></textarea>
+    `;
+    container.appendChild(card);
+  });
+
+  let idx = 0;
+  const results = new Array(files.length).fill(null);
+  const runner = async () => {
+    while (idx < files.length) {
+      const i = idx++;
+      const txt = await processInvoice(files[i], token, i);
+      if (txt) results[i] = `--- سند ${i + 1}: ${files[i].name} ---\n${txt}`;
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(3, files.length) }, runner));
+
+  allOcrText = results.filter(Boolean).join('\n\n');
+  document.getElementById('btnOcr').disabled = false;
+  document.getElementById('aiSection').classList.remove('hidden');
+}
+
+// ---------- AI ----------
+function appendMessage(role, content, isMarkdown) {
+  const chatBox = document.getElementById('chatBox');
+  const div = document.createElement('div');
+  div.className = 'msg ' + (role === 'user' ? 'msg-user' : 'msg-ai');
+  if (isMarkdown) div.innerHTML = renderMarkdown(content);
+  else div.innerHTML = escapeHtml(content);
+  chatBox.appendChild(div);
+  chatBox.scrollTop = chatBox.scrollHeight;
+  return div;
+}
+
+function appendTyping() {
+  const chatBox = document.getElementById('chatBox');
+  const div = document.createElement('div');
+  div.className = 'msg msg-ai typing';
+  div.id = 'typing-indicator';
+  div.textContent = '⏳ در حال ارزیابی... (این مرحله ممکن است ۳۰ تا ۶۰ ثانیه طول بکشد)';
+  chatBox.appendChild(div);
+  chatBox.scrollTop = chatBox.scrollHeight;
+  return div;
+}
+
+function removeTyping() {
+  const el = document.getElementById('typing-indicator');
+  if (el) el.remove();
+}
+
+async function sendToAI() {
+  if (!allOcrText) return alert('ابتدا OCR را انجام دهید');
+
+  const btn = document.getElementById('btnAnalyze');
+  btn.disabled = true;
+  btn.textContent = '⏳ در حال ارزیابی...';
+  document.getElementById('chatSection').classList.remove('hidden');
+  document.getElementById('chatBox').innerHTML = '';
+  appendMessage('user', 'شروع ارزیابی مدارک', false);
+  appendTyping();
+
+  const formData = new FormData();
+  formData.append('ocr_text', allOcrText);
+  formData.append('extra_note', document.getElementById('extraNote').value);
+
+  try {
+    const res = await fetch(`${BACKEND}/api/analyze`, { method: 'POST', body: formData });
+    const data = await res.json();
+    removeTyping();
+    if (!res.ok) throw new Error(data.detail || 'خطا در بک‌اند');
+    currentConversationId = data.conversation_id;
+    appendMessage('ai', data.answer, true);
+    document.getElementById('aiSection').style.opacity = '0.5';
+    document.getElementById('aiSection').style.pointerEvents = 'none';
+  } catch (err) {
+    removeTyping();
+    appendMessage('ai', 'خطا: ' + err.message, false);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '✨ شروع ارزیابی';
+  }
+}
+
+async function sendFollowUp() {
+  const input = document.getElementById('chatInput');
+  const message = input.value.trim();
+  if (!message || !currentConversationId) return;
+  input.value = '';
+  appendMessage('user', message, false);
+  appendTyping();
+
+  const formData = new FormData();
+  formData.append('message', message);
+  formData.append('conversation_id', currentConversationId);
+
+  try {
+    const res = await fetch(`${BACKEND}/api/chat`, { method: 'POST', body: formData });
+    const data = await res.json();
+    removeTyping();
+    if (!res.ok) throw new Error(data.detail || 'خطا');
+    appendMessage('ai', data.answer, true);
+  } catch (err) {
+    removeTyping();
+    appendMessage('ai', 'خطا: ' + err.message, false);
+  }
+}
+</script>
+</body>
+</html>

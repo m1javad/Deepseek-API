@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>ارزیاب بیمه تکمیلی</title>
+  <style>
+    * { box-sizing: border-box; font-family: Vazirmatn, "Segoe UI", Tahoma, sans-serif; }
+    body {
+      width: 320px;
+      margin: 0;
+      padding: 12px;
+      background: #f1f5f9;
+      color: #0f172a;
+      font-size: 12.5px;
+      line-height: 1.8;
+    }
+    .card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 12px;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, .06);
+    }
+    .head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+    .title { font-weight: 700; font-size: 14px; }
+    .switch { position: relative; display: inline-block; width: 40px; height: 22px; flex: none; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; inset: 0; cursor: pointer; background: #cbd5e1; border-radius: 999px; transition: .2s; }
+    .slider::before {
+      content: ""; position: absolute; width: 16px; height: 16px; left: 3px; top: 3px;
+      background: #fff; border-radius: 50%; transition: .2s;
+    }
+    .switch input:checked + .slider { background: #0d9488; }
+    .switch input:checked + .slider::before { transform: translateX(18px); }
+
+    .state { font-size: 11.5px; padding: 6px 9px; border-radius: 8px; margin-bottom: 10px; }
+    .state.ok { background: #dcfce7; color: #166534; }
+    .state.warn { background: #fef3c7; color: #92400e; }
+    .state.err { background: #fee2e2; color: #991b1b; }
+    .state.busy { background: #e0f2fe; color: #075985; }
+
+    label.lbl { display: block; font-size: 11px; font-weight: 600; color: #475569; margin: 9px 0 3px; }
+    input[type="text"] {
+      width: 100%; padding: 6px 8px; border: 1px solid #cbd5e1; border-radius: 7px;
+      font-size: 11.5px; outline: none; background: #fff;
+    }
+    input[type="text"]:focus { border-color: #14b8a6; }
+    .check { display: flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 11.5px; color: #334155; }
+    .check input { accent-color: #0d9488; }
+
+    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 11px; }
+    button {
+      border: 0; border-radius: 8px; padding: 8px 10px; cursor: pointer;
+      font-family: inherit; font-size: 11.5px; font-weight: 700;
+    }
+    button.primary { background: #0d9488; color: #fff; grid-column: span 2; }
+    button.secondary { background: #f1f5f9; border: 1px solid #e2e8f0; color: #334155; }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+    button:hover:not(:disabled) { filter: brightness(.97); }
+
+    .msg { min-height: 16px; margin-top: 8px; font-size: 11px; color: #0f766e; }
+    .hint { margin-top: 9px; font-size: 10.5px; color: #64748b; line-height: 1.75; }
+    code { background: #e2e8f0; padding: 1px 4px; border-radius: 4px; direction: ltr; display: inline-block; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="head">
+      <div class="title">🏥 ارزیاب بیمه تکمیلی</div>
+      <label class="switch" title="روشن / خاموش">
+        <input type="checkbox" id="enabled" />
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div class="state busy" id="pageState">در حال بررسی صفحه…</div>
+
+    <label class="lbl" for="ebooToken">توکن ایبو</label>
+    <input id="ebooToken" type="text" spellcheck="false" dir="ltr" placeholder="WAe..." />
+
+    <label class="lbl" for="backendUrl">آدرس بک‌اند</label>
+    <input id="backendUrl" type="text" spellcheck="false" dir="ltr" placeholder="http://127.0.0.1:8000" />
+
+    <label class="check">
+      <input type="checkbox" id="autoDownload" />
+      ذخیرهٔ خودکار تصاویر در Downloads
+    </label>
+
+    <div class="actions">
+      <button id="btnSave" class="primary">ذخیره</button>
+      <button id="btnRun" class="secondary">شروع ارزیابی</button>
+      <button id="btnPanel" class="secondary">نمایش پنل</button>
+    </div>
+
+    <div class="msg" id="msg"></div>
+    <div class="hint">
+      قبل از استفاده <code>python backend.py</code> را اجرا کنید، سپس صفحهٔ مدارک را در
+      <code>iapui.ostaadx.ai</code> باز کنید. دکمهٔ کوچک «ارزیابی مدارک» در صفحه ظاهر
+      می‌شود؛ برای شروع روی آن بزنید. هیچ ارزیابی‌ای خودکار اجرا نمی‌شود.
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
